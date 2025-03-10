@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "drf_yasg",
     "crispy_forms",
+    "phonenumber_field",
     "crispy_bootstrap5",
     "authapp",
     "users",
@@ -126,6 +127,12 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',  # Оставляем для админки
+    'users.backends.PhoneBackend',  # Ваш кастомный бэк
+]
+
+
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
@@ -171,5 +178,18 @@ if "test" in sys.argv:
             "NAME": BASE_DIR / "test_db.sqlite3",
         }
     }
+
+CACHE_ENABLED = True if os.getenv("CACHE_ENABLED") == "True" else False
+if CACHE_ENABLED:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": os.getenv("LOCATION"),
+        }
+    }
+
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+
+SMSAERO_API_KEY = os.getenv("SMSAERO_API_KEY")
 
 
