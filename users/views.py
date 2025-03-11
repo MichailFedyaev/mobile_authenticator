@@ -1,7 +1,7 @@
 from django.http import JsonResponse
 
 from users.services import generate_invite_code, send_sms, normalize_phone
-
+from django.core.cache import cache
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -91,8 +91,15 @@ class PhoneConfirmView(FormView):
     template_name = 'users/phone_confirm.html'
     form_class = CodeForm
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        phone = self.request.session.get('phone')
+        cached_code = cache.get(f"user_{phone}_code")
+        context["cached_code"] = cached_code
+        return context
+
     def post(self, request, *args, **kwargs):
-        phone = request.session.get('phone')  # Получаем номер телефона из сессии
+        phone = request.session.get('phone')
         code = request.POST.get('code')
 
         user = User.objects.filter(phone=phone).first()
