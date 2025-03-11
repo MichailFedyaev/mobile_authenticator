@@ -34,7 +34,7 @@ class RegisterView(APIView):
             # Проверяем, существует ли пользователь с таким номером
             user, created = User.objects.get_or_create(phone=phone)
             if not created:
-                if user.invited_by:  # Если инвайт-код уже был установлен ранее
+                if user.invited_by and invited_by_code:  # Если инвайт-код уже был установлен ранее
                     return Response({"invited_by": "Инвайт-код уже указан и не может быть изменён."},
                                     status=status.HTTP_400_BAD_REQUEST)
                 # Устанавливаем инвайт-код, если он передан и ранее не был установлен
