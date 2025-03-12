@@ -5,6 +5,7 @@ from django.core.cache import cache
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework.permissions import AllowAny
 
 from django.views.generic import View, FormView
@@ -26,6 +27,7 @@ from django.db import IntegrityError
 class RegisterView(APIView):
     permission_classes = [AllowAny]
 
+    @swagger_auto_schema(request_body=RegisterSerializer, responses={200: "Код отправлен"})
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
@@ -54,6 +56,7 @@ class RegisterView(APIView):
 class VerifyCodeView(APIView):
     permission_classes = [AllowAny]
 
+    @swagger_auto_schema(request_body=VerifyCodeSerializer, responses={200: "Авторизация успешна"})
     def post(self, request):
         serializer = VerifyCodeSerializer(data=request.data)
         if serializer.is_valid():
