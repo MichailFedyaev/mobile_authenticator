@@ -191,5 +191,5 @@ if CACHE_ENABLED:
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 
 SMSAERO_API_KEY = os.getenv("SMSAERO_API_KEY")
-
-
+SMSAERO_EMAIL = os.getenv("SMSAERO_EMAIL")
+SMSAERO_SIGN = os.getenv("SMSAERO_SIGN")

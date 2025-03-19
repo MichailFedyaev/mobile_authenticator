@@ -2,4 +2,11 @@ from django import forms
 
 
 class InviteCodeForm(forms.Form):
-    code = forms.CharField(max_length=6, label="Код приглашения")
+    invite_code = forms.CharField(
+        max_length=6,
+        label="Инвайт-код",
+        widget=forms.TextInput(attrs={
+            'class': 'form-control form-control-lg',
+            'placeholder': 'Введите код'
+        })
+    )

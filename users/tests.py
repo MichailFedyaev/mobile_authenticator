@@ -4,12 +4,9 @@ from unittest.mock import patch
 from rest_framework import status
 from rest_framework.test import APITestCase
 from django.test import TestCase
-from django.contrib.auth import get_user_model
 
 from users.models import User
-from users.services import send_sms
 from users.backends import PhoneBackend
-from django.core.cache import cache
 
 
 class RegisterViewTestCase(APITestCase):

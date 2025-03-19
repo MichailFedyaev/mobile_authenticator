@@ -1,7 +1,13 @@
 <style>
-
     .sidebar {
         min-height: 100vh; /* Минимальная высота боковой панели */
+    }
+
+    /* Убираем лишний отступ вокруг hr, если он нужен */
+    .sidebar hr {
+        margin: 0; /* Убираем отступы сверху и снизу */
+        border: none; /* Убираем линию */
+        border-top: 1px solid rgba(0, 0, 0, 0.1); /* Если линия все же нужна, делаем ее менее заметной */
     }
 </style>
 
@@ -19,7 +25,7 @@
 
                 {% if user.is_authenticated %}
                 <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-2 active" aria-current="page" href="{% url 'authapp:index' %}">
+                    <a class="nav-link d-flex align-items-center gap-2" aria-current="page" href="{% url 'authapp:index' %}">
                         <svg class="bi">
                             <use xlink:href="/static/svg/icons-menu.svg#house-fill"/>
                         </svg>
@@ -27,51 +33,51 @@
                     </a>
                 </li>
 
-
-
-            <hr class="my-3">
-            {% endif %}
-
-
-            <ul class="nav flex-column mb-auto">
-
-                {% if user.is_superuser %}
-                <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-2" href="{% url 'authapp:users_list' %}">
-                        <svg class="bi">
-                            <use xlink:href="/static/svg/icons-menu.svg#people"/>
-                        </svg>
-                        Пользователи системы
-                    </a>
-                </li>
-                {% endif %}
-                {% if user.is_authenticated %}
-                <li class="nav-item">
-                    <form method="post" action="{% url 'authapp:logout' %}">
-                    {% csrf_token %}
-                    <button type="submit" class="nav-link d-flex align-items-center gap-2">
-                        <svg class="bi">
-                            <use xlink:href="/static/svg/icons-menu.svg#door-closed"/>
-                        </svg>
-                        Выход
-                    </button>
-                    </form>
-                </li>
-
-                {% else %}
-
-
-                <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-2" href="{% url 'authapp:phone_login' %}">
-                        <svg class="bi">
-                            <use xlink:href="/static/svg/icons-menu.svg#door-open"/>
-                        </svg>
-                        Войти по телефону
-                    </a>
-                </li>
+                <!-- Убираем или корректируем hr -->
+                <hr class="my-0"> <!-- Если нужно оставить линию, но без отступов -->
 
                 {% endif %}
 
+                <ul class="nav flex-column mb-auto">
+
+                    {% if user.is_superuser %}
+                    <li class="nav-item">
+                        <a class="nav-link d-flex align-items-center gap-2" href="{% url 'authapp:users_list' %}">
+                            <svg class="bi">
+                                <use xlink:href="/static/svg/icons-menu.svg#people"/>
+                            </svg>
+                            Пользователи системы
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <form method="post" action="{% url 'authapp:logout' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="nav-link d-flex align-items-center gap-2">
+                            <svg class="bi">
+                                <use xlink:href="/static/svg/icons-menu.svg#door-closed"/>
+                            </svg>
+                            Выход
+                        </button>
+                        </form>
+                    </li>
+
+                    {% else %}
+
+                    <li class="nav-item">
+                        <a class="nav-link d-flex align-items-center gap-2" href="{% url 'authapp:phone_login' %}">
+                            <svg class="bi">
+                                <use xlink:href="/static/svg/icons-menu.svg#door-open"/>
+                            </svg>
+                            Войти по телефону
+                        </a>
+                    </li>
+
+                    {% endif %}
+
+                </ul>
             </ul>
         </div>
     </div>

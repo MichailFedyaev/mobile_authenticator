@@ -74,3 +74,97 @@
 .bd-mode-toggle .dropdown-menu .active .bi {
   display: block !important;
 }
+
+/* Стили для user_list */
+.user-table {
+    border: 1px solid var(--bs-border-color);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+    margin: 20px 0;
+}
+
+.user-table .table {
+    margin-bottom: 0;
+}
+
+.user-table thead th {
+    background-color: var(--bs-tertiary-bg);
+    border-bottom: 2px solid var(--bs-border-color);
+    padding: 12px;
+    font-weight: 600;
+    color: var(--bs-body-color);
+}
+
+.user-table tbody td {
+    padding: 12px;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--bs-border-color);
+    color: var(--bs-body-color);
+}
+
+.user-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.user-table tbody tr:hover {
+    background-color: var(--bs-tertiary-bg);
+}
+
+.invited-users {
+    color: var(--bs-body-color);
+}
+
+.invited-users span {
+    display: inline-block;
+    margin: 2px 0;
+}
+
+/* Стиль для заголовка страницы */
+.page-header {
+    padding-left: 5px;
+    margin-bottom: 0px;
+    font-size: 2.2rem;
+    font-weight: 600;
+    color: var(--bs-body-color);
+}
+
+/* Стили для карточки инвайт-кода */
+.card {
+    border-color: var(--bs-border-color);
+    background-color: var(--bs-card-bg);
+    box-shadow: 0 0.5rem 1rem rgba(var(--bs-body-color-rgb), 0.15);
+}
+
+.card-header {
+    background-color: var(--bs-tertiary-bg);
+    border-bottom: 1px solid var(--bs-border-color);
+    padding: 1rem;
+}
+
+.card-header h3 {
+    color: var(--bs-body-color);
+    font-weight: 600;
+}
+
+.card-body {
+    padding: 2rem;
+    color: var(--bs-body-color);
+}
+
+.form-label {
+    color: var(--bs-body-color);
+    font-weight: 500;
+}
+
+.form-control {
+    background-color: var(--bs-form-control-bg);
+    border-color: var(--bs-border-color);
+    color: var(--bs-body-color);
+}
+
+.form-control:focus {
+    background-color: var(--bs-form-control-bg);
+    border-color: var(--bs-primary);
+    color: var(--bs-body-color);
+}

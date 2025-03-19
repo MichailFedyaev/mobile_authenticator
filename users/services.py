@@ -1,31 +1,70 @@
 import random
 import string
-from config.settings import SMSAERO_API_KEY
-from phonenumbers import parse, format_number, PhoneNumberFormat
-from smsaero import SmsAero, SmsAeroException
+import requests
+from urllib.parse import quote
+from django.conf import settings
+from loguru import logger
 
 
-SMSAERO_EMAIL = 'm.fedyayev.02@mail.ru'
-
-
-def send_sms(phone: int, message: str) -> dict:
+def send_sms(phone: str, message: str) -> bool:
     """
-    Sends an SMS message
-    Parameters:
-    phone (int): The phone number to which the SMS message will be sent.
-    message (str): The content of the SMS message to be sent.
+    Отправляет SMS сообщение через SMS Aero API используя HTTP-запросы
+    Args:
+        phone (str): Номер телефона получателя
+        message (str): Текст сообщения
     Returns:
-    dict: A dictionary containing the response from the SmsAero API.
+        bool: True если сообщение успешно отправлено, False в противном случае
     """
-    api = SmsAero(SMSAERO_EMAIL, SMSAERO_API_KEY)
-    return api.send_sms(phone, message)
+    try:
+        logger.info(f"Отправка SMS на номер {phone}")
+        
+        # Форматируем номер телефона (убираем +)
+        formatted_phone = phone.lstrip("+")
+        logger.debug(f"Форматированный номер: {formatted_phone}")
+        
+        # Кодируем текст сообщения и подпись
+        encoded_text = quote(message)
+        encoded_sign = quote(settings.SMSAERO_SIGN)
+        
+        # Формируем URL для запроса
+        url = (
+            f"https://{settings.SMSAERO_EMAIL}:{settings.SMSAERO_API_KEY}"
+            f"@gate.smsaero.ru/v2/sms/testsend?"   # f"@gate.smsaero.ru/v2/sms/send?"
+            f"number={formatted_phone}&"
+            f"text={encoded_text}&"
+            f"sign={encoded_sign}&"
+            f"channel=DIRECT"
+        )
+        
+        logger.debug(f"Отправка запроса к SMS Aero API")
+        response = requests.get(
+            requests.utils.requote_uri(url),
+            headers={"Accept": "application/json"},
+            timeout=5
+        )
+        
+        if response.status_code == 200:
+            result = response.json()
+            success = result.get("success", False)
+            if success:
+                logger.info("SMS успешно отправлено")
+                return True
+            else:
+                logger.error(f"Ошибка от SMS Aero API: {result}")
+                return False
+                
+        logger.error(f"Ошибка HTTP: {response.status_code} - {response.text}")
+        return False
+        
+    except Exception as e:
+        logger.error(f"Неожиданная ошибка при отправке SMS: {str(e)}")
+        return False
 
 
-def normalize_phone(phone):
-    parsed_phone = parse(phone, "RU")  # Парсим номер телефона
-    return format_number(parsed_phone, PhoneNumberFormat.E164)  # Приводим к международному формату
-
-
-def generate_invite_code():
-    """Генерирует 6-значный инвайт-код."""
+def generate_invite_code() -> str:
+    """
+    Генерирует 6-значный инвайт-код
+    Returns:
+        str: Сгенерированный инвайт-код
+    """
     return ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
