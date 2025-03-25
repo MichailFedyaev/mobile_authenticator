@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
+
 import os
 import sys
 from pathlib import Path
@@ -128,8 +129,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',  # Оставляем для админки
-    'users.backends.PhoneBackend',  # Ваш кастомный бэк
+    "django.contrib.auth.backends.ModelBackend",  # Оставляем для админки
+    "users.backends.PhoneBackend",  # Ваш кастомный бэк
 ]
 
 
@@ -188,7 +189,7 @@ if CACHE_ENABLED:
         }
     }
 
-SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 
 SMSAERO_API_KEY = os.getenv("SMSAERO_API_KEY")
 SMSAERO_EMAIL = os.getenv("SMSAERO_EMAIL")
@@ -196,14 +197,8 @@ SMSAERO_SIGN = os.getenv("SMSAERO_SIGN")
 
 
 SWAGGER_SETTINGS = {
-   'SECURITY_DEFINITIONS': {
-      'Basic': {
-            'type': 'basic'
-      },
-      'Bearer': {
-            'type': 'apiKey',
-            'name': 'Authorization',
-            'in': 'header'
-      }
-   }
+    "SECURITY_DEFINITIONS": {
+        "Basic": {"type": "basic"},
+        "Bearer": {"type": "apiKey", "name": "Authorization", "in": "header"},
+    }
 }

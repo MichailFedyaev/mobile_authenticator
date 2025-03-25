@@ -20,12 +20,21 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["id", "phone", "invite_code", "invited_by_user", "created_at", "invited_users"]
+        fields = [
+            "id",
+            "phone",
+            "invite_code",
+            "invited_by_user",
+            "created_at",
+            "invited_users",
+        ]
 
 
 class RegisterSerializer(serializers.Serializer):
     phone = serializers.CharField(max_length=15)
-    invited_by = serializers.CharField(max_length=6, required=False, allow_blank=True)  # Поле необязательное
+    invited_by = serializers.CharField(
+        max_length=6, required=False, allow_blank=True
+    )  # Поле необязательное
 
 
 class VerifyCodeSerializer(serializers.Serializer):

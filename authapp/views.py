@@ -32,16 +32,18 @@ class UserListView(LoginRequiredMixin, ListView):
         user = self.request.user
         if user.is_superuser:
             return super().dispatch(request, *args, **kwargs)
-        return HttpResponseForbidden("Вы не можете просматривать/изменять или удалять этот объект.")
+        return HttpResponseForbidden(
+            "Вы не можете просматривать/изменять или удалять этот объект."
+        )
 
 
 class EnterInviteCodeView(LoginRequiredMixin, FormView):
-    template_name = 'authapp/invite_code.html'
+    template_name = "authapp/invite_code.html"
     form_class = InviteCodeForm
-    success_url = reverse_lazy('authapp:index')
+    success_url = reverse_lazy("authapp:index")
 
     def form_valid(self, form):
-        invite_code = form.cleaned_data['invite_code']
+        invite_code = form.cleaned_data["invite_code"]
         user = self.request.user
 
         # Проверяем, не использовал ли пользователь уже инвайт-код
@@ -58,7 +60,9 @@ class EnterInviteCodeView(LoginRequiredMixin, FormView):
 
         # Проверяем, не пытается ли пользователь использовать свой собственный инвайт-код
         if invited_by_user == user:
-            messages.error(self.request, "Вы не можете использовать свой собственный инвайт-код")
+            messages.error(
+                self.request, "Вы не можете использовать свой собственный инвайт-код"
+            )
             return self.form_invalid(form)
 
         # Устанавливаем пригласившего пользователя

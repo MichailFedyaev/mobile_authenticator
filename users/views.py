@@ -1,5 +1,3 @@
-from django.http import JsonResponse
-
 from users.services import send_sms
 from django.core.cache import cache
 from rest_framework import generics, status
@@ -24,28 +22,36 @@ from users.forms import PhoneLoginForm, CodeForm
 class RegisterView(APIView):
     permission_classes = [AllowAny]
 
-    @swagger_auto_schema(request_body=RegisterSerializer, responses={200: "Код отправлен"})
+    @swagger_auto_schema(
+        request_body=RegisterSerializer, responses={200: "Код отправлен"}
+    )
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
-            phone = serializer.validated_data['phone']
-            invited_by_code = serializer.validated_data.get('invited_by')
-            
+            phone = serializer.validated_data["phone"]
+            invited_by_code = serializer.validated_data.get("invited_by")
+
             # Проверяем, существует ли пользователь с таким номером
             user, created = User.objects.get_or_create(phone=phone)
-            
+
             if not created:
                 if user.invited_by and invited_by_code:
-                    return Response({"invited_by": "Инвайт-код уже указан и не может быть изменён."},
-                                    status=status.HTTP_400_BAD_REQUEST)
-            
+                    return Response(
+                        {
+                            "invited_by": "Инвайт-код уже указан и не может быть изменён."
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
             # Устанавливаем инвайт-код, если он передан и ранее не был установлен
             if invited_by_code and not user.invited_by:
-                invited_by_user = User.objects.filter(invite_code=invited_by_code).first()
+                invited_by_user = User.objects.filter(
+                    invite_code=invited_by_code
+                ).first()
                 if invited_by_user:
                     user.invited_by = invited_by_user
                     user.save()
-            
+
             # Отправляем код подтверждения
             try:
                 message_code = user.generate_code()
@@ -53,10 +59,12 @@ class RegisterView(APIView):
                 print(code)
                 print(message_code)
                 return Response({"message": "Код отправлен"}, status=status.HTTP_200_OK)
-            except SmsAeroException as e:
-                return Response({"message": "Ошибка отправки SMS. Попробуйте позже."},
-                                status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
+            except SmsAeroException:
+                return Response(
+                    {"message": "Ошибка отправки SMS. Попробуйте позже."},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                )
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -66,28 +74,38 @@ class VerifyCodeView(APIView):
     Ожидает номер телефона и код подтверждения.
     Проверяет корректность кода и, в случае успеха, выдаёт JWT-токены.
     """
+
     permission_classes = [AllowAny]
 
-    @swagger_auto_schema(request_body=VerifyCodeSerializer, responses={200: "Авторизация успешна"})
+    @swagger_auto_schema(
+        request_body=VerifyCodeSerializer, responses={200: "Авторизация успешна"}
+    )
     def post(self, request):
         serializer = VerifyCodeSerializer(data=request.data)
         if serializer.is_valid():
-            phone = serializer.validated_data['phone']
-            code = serializer.validated_data['code']
+            phone = serializer.validated_data["phone"]
+            code = serializer.validated_data["code"]
             user = User.objects.filter(phone=phone).first()
             if user and user.check_code(code):
                 # Генерация JWT токенов
                 refresh = RefreshToken.for_user(user)
-                return Response({"refresh": str(refresh), "access": str(refresh.access_token)},
-                                status=status.HTTP_200_OK)
-                return Response({"message": "Авторизация успешна"}, status=status.HTTP_200_OK)
+                return Response(
+                    {"refresh": str(refresh), "access": str(refresh.access_token)},
+                    status=status.HTTP_200_OK,
+                )
+                return Response(
+                    {"message": "Авторизация успешна"}, status=status.HTTP_200_OK
+                )
             else:
-                return Response({"message": "Неверный код"}, status=status.HTTP_403_FORBIDDEN)
+                return Response(
+                    {"message": "Неверный код"}, status=status.HTTP_403_FORBIDDEN
+                )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserProfileView(generics.RetrieveAPIView):
     """Эндпоинт для получения информации о пользователе."""
+
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
@@ -98,7 +116,7 @@ class UserProfileView(generics.RetrieveAPIView):
 class SendSMSView(View):
     def post(self, request):
         # Получаем номер телефона из формы
-        phone_number = request.POST.get('phone')
+        phone_number = request.POST.get("phone")
 
         # Пример обработки номера телефона
         if phone_number:
@@ -106,30 +124,32 @@ class SendSMSView(View):
             # Здесь можно добавить логику проверки номера телефона, аутентификации и т.д.
         else:
             messages.error(request, "Номер телефона обязателен для заполнения.")
-            return redirect('users:login')  # Редирект обратно на страницу входа
+            return redirect("users:login")  # Редирект обратно на страницу входа
 
         try:
             result = send_sms(phone_number, "Привет")
             print(result)
         except SmsAeroException as e:
             print(f"An error occurred: {e}")
-        return redirect('users:login')
+        return redirect("users:login")
 
 
 class PhoneLoginView(View):
-    template_name = 'users/phone_login.html'
+    template_name = "users/phone_login.html"
     form_class = PhoneLoginForm
 
     def get(self, request):
         form = self.form_class()
-        return render(request, self.template_name, {'form': form})
+        return render(request, self.template_name, {"form": form})
 
     def post(self, request):
         form = self.form_class(request.POST)
         if form.is_valid():
-            phone = form.cleaned_data['phone']
-            request.session['phone'] = phone
-            user, created = User.objects.get_or_create(phone=phone)  # Получаем или создаем пользователя
+            phone = form.cleaned_data["phone"]
+            request.session["phone"] = phone
+            user, created = User.objects.get_or_create(
+                phone=phone
+            )  # Получаем или создаем пользователя
             code = user.generate_code()  # Генерация кода
 
             # Сохраняем код в кэш
@@ -138,45 +158,49 @@ class PhoneLoginView(View):
             try:
                 send_sms(phone, code)
                 # messages.success(request, "Код подтверждения отправлен")
-                return redirect('authapp:phone_confirm')
+                return redirect("authapp:phone_confirm")
             except Exception as e:
                 messages.error(request, f"Ошибка отправки SMS: {str(e)}")
-                return render(request, self.template_name, {'form': form})
+                return render(request, self.template_name, {"form": form})
 
-        return render(request, self.template_name, {'form': form})
+        return render(request, self.template_name, {"form": form})
 
 
 class PhoneConfirmView(FormView):
-    template_name = 'users/phone_confirm.html'
+    template_name = "users/phone_confirm.html"
     form_class = CodeForm
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        phone = self.request.session.get('phone')
+        phone = self.request.session.get("phone")
         if phone:
             cached_code = cache.get(f"user_{phone}_code")
-            print(f"Логин на телефон: {phone}. "  # Для отладки
-                  f"Код подтверждения: {cached_code}.")  # Для отладки
+            print(
+                f"Логин на телефон: {phone}. "  # Для отладки
+                f"Код подтверждения: {cached_code}."
+            )  # Для отладки
             context["cached_code"] = cached_code
         return context
 
     def post(self, request, *args, **kwargs):
-        phone = request.session.get('phone')
-        code = request.POST.get('code')
-        
+        phone = request.session.get("phone")
+        code = request.POST.get("code")
+
         if not phone:
-            messages.error(request, "Сессия истекла. Пожалуйста, введите номер телефона заново.")
-            return redirect('users:phone_login')
+            messages.error(
+                request, "Сессия истекла. Пожалуйста, введите номер телефона заново."
+            )
+            return redirect("users:phone_login")
 
         user = User.objects.filter(phone=phone).first()
         cached_code = cache.get(f"user_{phone}_code")
-        
+
         if user and (user.check_code(code) or code == cached_code):
             # Очищаем код из кэша после успешной авторизации
             cache.delete(f"user_{phone}_code")
-            login(request, user, backend='users.backends.PhoneBackend')
-            return redirect('authapp:index')
+            login(request, user, backend="users.backends.PhoneBackend")
+            return redirect("authapp:index")
         else:
             form = self.get_form()
-            form.add_error('code', 'Неверный код')
+            form.add_error("code", "Неверный код")
             return self.form_invalid(form)

@@ -17,32 +17,32 @@ def send_sms(phone: str, message: str) -> bool:
     """
     try:
         logger.info(f"Отправка SMS на номер {phone}")
-        
+
         # Форматируем номер телефона (убираем +)
         formatted_phone = phone.lstrip("+")
         logger.debug(f"Форматированный номер: {formatted_phone}")
-        
+
         # Кодируем текст сообщения и подпись
         encoded_text = quote(message)
         encoded_sign = quote(settings.SMSAERO_SIGN)
-        
+
         # Формируем URL для запроса
         url = (
             f"https://{settings.SMSAERO_EMAIL}:{settings.SMSAERO_API_KEY}"
-            f"@gate.smsaero.ru/v2/sms/testsend?"   # f"@gate.smsaero.ru/v2/sms/send?"
+            f"@gate.smsaero.ru/v2/sms/testsend?"  # f"@gate.smsaero.ru/v2/sms/send?"
             f"number={formatted_phone}&"
             f"text={encoded_text}&"
             f"sign={encoded_sign}&"
             f"channel=DIRECT"
         )
-        
-        logger.debug(f"Отправка запроса к SMS Aero API")
+
+        logger.debug("Отправка запроса к SMS Aero API")
         response = requests.get(
             requests.utils.requote_uri(url),
             headers={"Accept": "application/json"},
-            timeout=5
+            timeout=5,
         )
-        
+
         if response.status_code == 200:
             result = response.json()
             success = result.get("success", False)
@@ -52,10 +52,10 @@ def send_sms(phone: str, message: str) -> bool:
             else:
                 logger.error(f"Ошибка от SMS Aero API: {result}")
                 return False
-                
+
         logger.error(f"Ошибка HTTP: {response.status_code} - {response.text}")
         return False
-        
+
     except Exception as e:
         logger.error(f"Неожиданная ошибка при отправке SMS: {str(e)}")
         return False
@@ -67,4 +67,4 @@ def generate_invite_code() -> str:
     Returns:
         str: Сгенерированный инвайт-код
     """
-    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+    return "".join(random.choices(string.ascii_uppercase + string.digits, k=6))
