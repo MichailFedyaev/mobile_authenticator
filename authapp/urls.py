@@ -11,8 +11,7 @@ urlpatterns = [
     path('', IndexView.as_view(), name='index'),
     path('phone-login/', PhoneLoginView.as_view(), name='phone_login'),
     path('phone-confirm/', PhoneConfirmView.as_view(), name='phone_confirm'),
-    path("login/", auth_views.LoginView.as_view(), name="login"), #
-    path("logout/", auth_views.LogoutView.as_view(next_page="authapp:index"), name="logout"), #
+    path("logout/", auth_views.LogoutView.as_view(next_page="authapp:index"), name="logout"),
     path('invite-code/', EnterInviteCodeView.as_view(), name='invite_code'),
     path('users/', UserListView.as_view(), name='users_list'),
 ]

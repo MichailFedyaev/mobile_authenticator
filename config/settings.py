@@ -193,3 +193,17 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 SMSAERO_API_KEY = os.getenv("SMSAERO_API_KEY")
 SMSAERO_EMAIL = os.getenv("SMSAERO_EMAIL")
 SMSAERO_SIGN = os.getenv("SMSAERO_SIGN")
+
+
+SWAGGER_SETTINGS = {
+   'SECURITY_DEFINITIONS': {
+      'Basic': {
+            'type': 'basic'
+      },
+      'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+      }
+   }
+}
