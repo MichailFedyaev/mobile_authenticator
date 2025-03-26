@@ -154,10 +154,11 @@ class SendSMSView(APIView):
         if serializer.is_valid():
             phone = serializer.validated_data["phone"]
             user, created = User.objects.get_or_create(phone=phone)
-            
+
             try:
                 message_code = user.generate_code()
                 code = send_sms(phone, message_code)
+                print(code)
                 logger.info(f"Логин на телефон: {phone}. Код подтверждения: {message_code}.")
                 return Response({"message": "Код отправлен"}, status=status.HTTP_200_OK)
             except SmsAeroException:
@@ -165,7 +166,6 @@ class SendSMSView(APIView):
                     {"message": "Ошибка отправки SMS. Попробуйте позже."},
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR
                 )
-        
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
