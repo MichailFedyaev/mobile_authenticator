@@ -18,6 +18,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login
 from users.forms import PhoneLoginForm, CodeForm
 from loguru import logger
+from config.settings import DEBUG
 
 
 class RegisterView(APIView):
@@ -71,9 +72,11 @@ class RegisterView(APIView):
                     f"Логин на телефон: {phone}. "
                     f"Код подтверждения: {message_code}."
                 )
-                print(code)
-                print(message_code)
-                return Response({"message": "Код отправлен"}, status=status.HTTP_200_OK)
+                if code:
+                    response_data = {"message": "Код отправлен"}
+                    if DEBUG:
+                        response_data["debug_code"] = message_code
+                    return Response(response_data, status=status.HTTP_200_OK)
             except SmsAeroException:
                 return Response(
                     {"message": "Ошибка отправки SMS. Попробуйте позже."},
@@ -131,42 +134,6 @@ class UserProfileView(generics.RetrieveAPIView):
 
     def get_object(self):
         return self.request.user
-
-
-class SendSMSView(APIView):
-    """
-    Эндпоинт для проверки корректности работы отправки СМС.
-    Ожидает номер телефона.
-    В случае успеха, отправляет код.
-    """
-    permission_classes = [AllowAny]
-
-    @swagger_auto_schema(
-        request_body=RegisterSerializer,
-        responses={
-            200: "Код отправлен",
-            400: "Ошибка валидации",
-            500: "Ошибка отправки SMS"
-        }
-    )
-    def post(self, request):
-        serializer = RegisterSerializer(data=request.data)
-        if serializer.is_valid():
-            phone = serializer.validated_data["phone"]
-            user, created = User.objects.get_or_create(phone=phone)
-
-            try:
-                message_code = user.generate_code()
-                code = send_sms(phone, message_code)
-                print(code)
-                logger.info(f"Логин на телефон: {phone}. Код подтверждения: {message_code}.")
-                return Response({"message": "Код отправлен"}, status=status.HTTP_200_OK)
-            except SmsAeroException:
-                return Response(
-                    {"message": "Ошибка отправки SMS. Попробуйте позже."},
-                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
-                )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class PhoneLoginView(View):
