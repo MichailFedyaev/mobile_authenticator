@@ -19,6 +19,7 @@ from django.contrib.auth import login
 from users.forms import PhoneLoginForm, CodeForm
 from loguru import logger
 from config.settings import DEBUG
+from users.throttles import PhoneCodeThrottle, VerifyCodeThrottle
 
 
 class RegisterView(APIView):
@@ -28,6 +29,7 @@ class RegisterView(APIView):
     В случае успеха, отправляет код.
     """
     permission_classes = [AllowAny]
+    throttle_classes = [PhoneCodeThrottle]  # Ограничение запросов
 
     @swagger_auto_schema(
         request_body=RegisterSerializer,
@@ -94,6 +96,7 @@ class VerifyCodeView(APIView):
     """
 
     permission_classes = [AllowAny]
+    throttle_classes = [VerifyCodeThrottle]
 
     @swagger_auto_schema(
         request_body=VerifyCodeSerializer,
