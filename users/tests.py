@@ -67,7 +67,7 @@ class VerifyCodeViewTestCase(APITestCase):
         response = self.client.post(url, data)
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertEqual(response.data["message"], "Неверный код")
+        self.assertEqual(response.data["message"], "Неверный код или срок действия истек")
 
 
 class UserProfileViewTestCase(APITestCase):
