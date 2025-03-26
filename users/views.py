@@ -17,6 +17,7 @@ from smsaero import SmsAeroException
 from django.shortcuts import render, redirect
 from django.contrib.auth import login
 from users.forms import PhoneLoginForm, CodeForm
+from loguru import logger
 
 
 class RegisterView(APIView):
@@ -56,6 +57,10 @@ class RegisterView(APIView):
             try:
                 message_code = user.generate_code()
                 code = send_sms(phone, message_code)
+                logger.info(
+                    f"Логин на телефон: {phone}. "
+                    f"Код подтверждения: {message_code}."
+                )
                 print(code)
                 print(message_code)
                 return Response({"message": "Код отправлен"}, status=status.HTTP_200_OK)
