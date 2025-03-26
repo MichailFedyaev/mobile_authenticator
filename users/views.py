@@ -21,10 +21,20 @@ from loguru import logger
 
 
 class RegisterView(APIView):
+    """
+    Эндпоинт для логина в сервис, присваивания инвайт-кода.
+    Ожидает номер телефона.
+    В случае успеха, отправляет код.
+    """
     permission_classes = [AllowAny]
 
     @swagger_auto_schema(
-        request_body=RegisterSerializer, responses={200: "Код отправлен"}
+        request_body=RegisterSerializer,
+        responses={
+            200: "Код отправлен",
+            400: "Ошибка валидации",
+            500: "Ошибка отправки SMS"
+        }
     )
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
@@ -83,7 +93,12 @@ class VerifyCodeView(APIView):
     permission_classes = [AllowAny]
 
     @swagger_auto_schema(
-        request_body=VerifyCodeSerializer, responses={200: "Авторизация успешна"}
+        request_body=VerifyCodeSerializer,
+        responses={
+            200: "Авторизация успешна",
+            400: "Ошибка валидации",
+            403: "Неверный код",
+        }
     )
     def post(self, request):
         serializer = VerifyCodeSerializer(data=request.data)
@@ -103,7 +118,7 @@ class VerifyCodeView(APIView):
                 )
             else:
                 return Response(
-                    {"message": "Неверный код"}, status=status.HTTP_403_FORBIDDEN
+                    {"message": "Неверный код или срок действия истек"}, status=status.HTTP_403_FORBIDDEN
                 )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -118,28 +133,44 @@ class UserProfileView(generics.RetrieveAPIView):
         return self.request.user
 
 
-class SendSMSView(View):
+class SendSMSView(APIView):
+    """
+    Эндпоинт для проверки корректности работы отправки СМС.
+    Ожидает номер телефона.
+    В случае успеха, отправляет код.
+    """
+    permission_classes = [AllowAny]
+
+    @swagger_auto_schema(
+        request_body=RegisterSerializer,
+        responses={
+            200: "Код отправлен",
+            400: "Ошибка валидации",
+            500: "Ошибка отправки SMS"
+        }
+    )
     def post(self, request):
-        # Получаем номер телефона из формы
-        phone_number = request.POST.get("phone")
-
-        # Пример обработки номера телефона
-        if phone_number:
-            print(f"Введённый номер телефона: {phone_number}")
-            # Здесь можно добавить логику проверки номера телефона, аутентификации и т.д.
-        else:
-            messages.error(request, "Номер телефона обязателен для заполнения.")
-            return redirect("users:login")  # Редирект обратно на страницу входа
-
-        try:
-            result = send_sms(phone_number, "Привет")
-            print(result)
-        except SmsAeroException as e:
-            print(f"An error occurred: {e}")
-        return redirect("users:login")
+        serializer = RegisterSerializer(data=request.data)
+        if serializer.is_valid():
+            phone = serializer.validated_data["phone"]
+            user, created = User.objects.get_or_create(phone=phone)
+            
+            try:
+                message_code = user.generate_code()
+                code = send_sms(phone, message_code)
+                logger.info(f"Логин на телефон: {phone}. Код подтверждения: {message_code}.")
+                return Response({"message": "Код отправлен"}, status=status.HTTP_200_OK)
+            except SmsAeroException:
+                return Response(
+                    {"message": "Ошибка отправки SMS. Попробуйте позже."},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class PhoneLoginView(View):
+    """Эндпоинт для входа в сервис(html)."""
     template_name = "users/phone_login.html"
     form_class = PhoneLoginForm
 
@@ -172,6 +203,7 @@ class PhoneLoginView(View):
 
 
 class PhoneConfirmView(FormView):
+    """Эндпоинт для подтверждения входа в сервис(html)."""
     template_name = "users/phone_confirm.html"
     form_class = CodeForm
 

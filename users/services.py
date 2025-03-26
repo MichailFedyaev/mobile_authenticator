@@ -4,6 +4,7 @@ import requests
 from urllib.parse import quote
 from django.conf import settings
 from loguru import logger
+from config.settings import DEBUG
 
 
 def send_sms(phone: str, message: str) -> bool:
@@ -26,10 +27,15 @@ def send_sms(phone: str, message: str) -> bool:
         encoded_text = quote(message)
         encoded_sign = quote(settings.SMSAERO_SIGN)
 
+        if DEBUG:
+            api_sms = "testsend?"
+        else:
+            api_sms = "send?"
+
         # Формируем URL для запроса
         url = (
             f"https://{settings.SMSAERO_EMAIL}:{settings.SMSAERO_API_KEY}"
-            f"@gate.smsaero.ru/v2/sms/testsend?"  # f"@gate.smsaero.ru/v2/sms/send?"
+            f"@gate.smsaero.ru/v2/sms/{api_sms}"
             f"number={formatted_phone}&"
             f"text={encoded_text}&"
             f"sign={encoded_sign}&"

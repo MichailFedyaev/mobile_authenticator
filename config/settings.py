@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import os
 import sys
 from pathlib import Path
+from datetime import timedelta
 
 from dotenv import load_dotenv
 
@@ -201,6 +202,11 @@ SWAGGER_SETTINGS = {
         "Basic": {"type": "basic"},
         "Bearer": {"type": "apiKey", "name": "Authorization", "in": "header"},
     }
+}
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=180),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
 }
 
 CSRF_TRUSTED_ORIGINS = [
