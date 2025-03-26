@@ -202,3 +202,9 @@ SWAGGER_SETTINGS = {
         "Bearer": {"type": "apiKey", "name": "Authorization", "in": "header"},
     }
 }
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost",
+    "http://127.0.0.1",
+    "http://109.73.198.51",
+]
