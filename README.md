@@ -62,15 +62,15 @@ python manage.py runserver
 **Request:**
 ```json
 {
-    "phone": "+79001234567",
-    "invited_by": "ABC123"  
+    "phone": "+79001234567"
 }
 ```
 
 **Response:**
 ```json
 {
-    "message": "Код отправлен"
+    "message": "Код отправлен",
+    "debug_code": "9378"
 }
 ```
 
@@ -81,7 +81,7 @@ python manage.py runserver
 ```json
 {
     "phone": "+79001234567",
-    "code": "1234"
+    "code": "9378"
 }
 ```
 
@@ -97,6 +97,13 @@ python manage.py runserver
 
 #### GET /api/profile/
 Получение информации о текущем пользователе.
+
+**Request:**
+```json
+{
+    "phone": "+79001234567",
+}
+```
 
 **Response:**
 ```json
@@ -119,6 +126,24 @@ python manage.py runserver
 }
 ```
 
+#### GET /api/profile/
+Получение access_token с помощью refresh_token.
+
+**Request:**
+```json
+{
+    "refresh": "refresh_token":,
+}
+```
+
+
+**Response:**
+```json
+{
+    "access": "access_token"
+}
+```
+
 ## Тестирование
 
 Для запуска тестов выполните:
@@ -128,8 +153,8 @@ python manage.py test
 
 ## Документация API
 
-Подробная документация API доступна по адресу `/api/docs/` после запуска сервера.
+Подробная документация API доступна по адресу `redoc/` после запуска сервера.
 
 ## Postman Collection
 
-Postman коллекция для тестирования API доступна в файле `mobile_authenticator.postman_collection.json`. 
+Postman коллекция для тестирования API доступна в файле `MobileAuthenticator.postman_collection.json`. 
