@@ -2,7 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from users.services import generate_invite_code
 from phonenumber_field.modelfields import PhoneNumberField
-import random
+import secrets
 from django.core.cache import cache
 
 
@@ -31,7 +31,7 @@ class User(AbstractUser):
     REQUIRED_FIELDS = []
 
     def generate_code(self):
-        code = str(random.randint(1000, 9999))  # Генерация 4-значного кода
+        code = str(secrets.randbelow(10000)).zfill(4)  # Генерация 4-значного кода
         cache.set(
             f"user_{self.phone}_code", code, timeout=300
         )  # Сохраняем код в кэше на 5 минут
