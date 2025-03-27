@@ -130,7 +130,11 @@ class VerifyCodeView(APIView):
 
 
 class UserProfileView(generics.RetrieveAPIView):
-    """Эндпоинт для получения информации о пользователе."""
+    """
+    Эндпоинт для получения информации о пользователе.
+    Ожидает access_token.
+    После чего выдает информации о пользователе
+    """
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
