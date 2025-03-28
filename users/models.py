@@ -4,6 +4,7 @@ from users.services import generate_invite_code
 from phonenumber_field.modelfields import PhoneNumberField
 import secrets
 from django.core.cache import cache
+from loguru import logger
 
 
 class User(AbstractUser):
@@ -39,6 +40,7 @@ class User(AbstractUser):
 
     def check_code(self, code):
         cached_code = cache.get(f"user_{self.phone}_code")
+        logger.debug(f"Совпадение кодов: представленный={code}, кэшированный={cached_code}")
         return cached_code == code
 
     def __str__(self):

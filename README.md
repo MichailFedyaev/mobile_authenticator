@@ -132,7 +132,7 @@ python manage.py runserver
 **Request:**
 ```json
 {
-    "refresh": "refresh_token":,
+    "refresh": "refresh_token"
 }
 ```
 

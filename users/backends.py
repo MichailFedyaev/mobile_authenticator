@@ -1,19 +1,26 @@
 from django.contrib.auth.backends import ModelBackend
 from django.core.cache import cache
 from users.models import User
+from loguru import logger
 
 
 class PhoneBackend(ModelBackend):
     def authenticate(self, request, username=None, password=None, **kwargs):
+        logger.info(f"Аутентификация на телефон: {username}, код:{password}")
         if username and password:
             user = User.objects.filter(phone=username).first()
             if user:
-                # Проверяем код из кэша
-                cached_code = cache.get(f'phone_confirm_{username}')
+                logger.debug(f"Пользователь найден: {user}")
+                cached_code = cache.get(f"user_{username}_code")
+                logger.debug(f"Код из кэша: {cached_code}")
                 if user.check_code(password) or password == cached_code:
-                    # Очищаем код из кэша после успешной аутентификации
-                    cache.delete(f'phone_confirm_{username}')
+                    logger.info(f"Совпадение кодов")
+                    cache.delete(f"user_{username}_code")
                     return user
+                else:
+                    logger.info(f"Код не соответствует")
+            else:
+                logger.info(f"Пользователь не найден")
         return None
 
     def get_user(self, user_id):

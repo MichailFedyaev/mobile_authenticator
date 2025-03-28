@@ -15,7 +15,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from smsaero import SmsAeroException
 
 from django.shortcuts import render, redirect
-from django.contrib.auth import login
+from django.contrib.auth import login, authenticate
 from users.forms import PhoneLoginForm, CodeForm
 from loguru import logger
 from config.settings import DEBUG
@@ -70,7 +70,7 @@ class RegisterView(APIView):
             try:
                 message_code = user.generate_code()
                 code = send_sms(phone, message_code)
-                logger.info(
+                logger.debug(
                     f"Логин на телефон: {phone}. "
                     f"Код подтверждения: {message_code}."
                 )
@@ -163,7 +163,7 @@ class PhoneLoginView(View):
             code = user.generate_code()  # Генерация кода
 
             # Сохраняем код в кэш
-            cache.set(f"user_{phone}_code", code, 300)  # 300 секунд = 5 минут
+            # cache.set(f"user_{phone}_code", code, 300)  # 300 секунд = 5 минут
 
             try:
                 send_sms(phone, code)
@@ -186,11 +186,12 @@ class PhoneConfirmView(FormView):
         phone = self.request.session.get("phone")
         if phone:
             cached_code = cache.get(f"user_{phone}_code")
-            print(
-                f"Логин на телефон: {phone}. "  # Для отладки
+            logger.debug(
+                f"Логин на телефон: {phone}. "  
                 f"Код подтверждения: {cached_code}."
-            )  # Для отладки
+            )
             context["cached_code"] = cached_code
+            context["debug"] = DEBUG  # для html
         return context
 
     def post(self, request, *args, **kwargs):
@@ -208,10 +209,16 @@ class PhoneConfirmView(FormView):
 
         if user and (user.check_code(code) or code == cached_code):
             # Очищаем код из кэша после успешной авторизации
-            cache.delete(f"user_{phone}_code")
-            login(request, user, backend="users.backends.PhoneBackend")
-            return redirect("authapp:index")
-        else:
-            form = self.get_form()
-            form.add_error("code", "Неверный код")
-            return self.form_invalid(form)
+            # cache.delete(f"user_{phone}_code")
+            user = authenticate(request=request, username=phone, password=code)
+            # print(f"телефон сессии: {phone}")
+            # print(f"код формы: {code}")
+            # print(user)
+            if user is not None:
+                cache.delete(f"user_{phone}_code")
+                login(request, user, backend="users.backends.PhoneBackend")
+                return redirect("authapp:index")
+            else:
+                form = self.get_form()
+                form.add_error("code", "Неверный код")
+                return self.form_invalid(form)
