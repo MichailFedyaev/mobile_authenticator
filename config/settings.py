@@ -130,7 +130,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 AUTHENTICATION_BACKENDS = [
-    #"django.contrib.auth.backends.ModelBackend",  # Оставляем для админки
+    # "django.contrib.auth.backends.ModelBackend",  # Оставляем для админки
     "users.backends.PhoneBackend",  # Ваш кастомный бэк
 ]
 

@@ -14,13 +14,13 @@ class PhoneBackend(ModelBackend):
                 cached_code = cache.get(f"user_{username}_code")
                 logger.debug(f"Код из кэша: {cached_code}")
                 if user.check_code(password) or password == cached_code:
-                    logger.info(f"Совпадение кодов")
+                    logger.info("Совпадение кодов")
                     cache.delete(f"user_{username}_code")
                     return user
                 else:
-                    logger.info(f"Код не соответствует")
+                    logger.info("Код не соответствует")
             else:
-                logger.info(f"Пользователь не найден")
+                logger.info("Пользователь не найден")
         return None
 
     def get_user(self, user_id):
